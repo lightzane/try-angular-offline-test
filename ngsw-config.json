@@ -26,5 +26,17 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "get",
+      "urls": ["https://jsonplaceholder.typicode.com/users"],
+      "cacheConfig": {
+        "maxSize": 5,
+        "maxAge": "5m",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    }
   ]
 }
