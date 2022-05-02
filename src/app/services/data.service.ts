@@ -1,22 +1,23 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { v4 as uuidv4 } from 'uuid';
+import { BSONService } from './bson.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
 
-  constructor(private readonly http: HttpClient) { }
+  constructor(private readonly http: HttpClient,
+    private readonly bsonService: BSONService) { }
 
   getUsers(): Observable<any> {
     return this.http.get(`https://jsonplaceholder.typicode.com/users`);
   }
 
   addUsers(): Observable<any> {
-    return this.http.post(`https://jsonplaceholder.typicode.com/users`, {
-      "id": uuidv4(),
+    return this.http.patch(`https://jsonplaceholder.typicode.com/users/1`, {
+      "id": this.bsonService.createObjectId(),
       "name": "Jane Doe",
       "username": "Jane",
       "email": "jane@sweet.biz",
