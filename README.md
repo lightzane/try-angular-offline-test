@@ -1,27 +1,57 @@
 # OfflineTest
 
+Testing Online Sync using:
+
+- Angular Service Worker (`ng add @angular/pwa`)
+- IndexedDB ([idb](https://www.npmjs.com/package/idb))
+- `addEventListener('online|offline')` (browser `window`)
+- API used in this project: https://jsonplaceholder.typicode.com/
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 13.3.4.
 
-## Development server
+## Test Demo
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+```
+npm install -g http-server
+npm install
+npm run build
+cd dist/offline-test
+http-server -p 4200
+```
 
-## Code scaffolding
+1. In browser, reload/refresh the page to make sure that GET (API call) is cached.
+2. In browser's `Developer Tools` > `Application` > `Service Workers` should have content
+3. Check **only** the `Offline` checkbox.
+4. Click on `Add User` button in the web user interface (note: x clicked)
+5. Uncheck the `Offline` checkbox in Service Workers
+6. API Call from Add User button should come in
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Getting Started
 
-## Build
+In the way the project was created:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+1. Project Setup and Installation
 
-## Running unit tests
+```
+ng new offline-test
+cd offline-test
+ng add @angular/pwa
+npm install idb
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+2. Create features to `GET` and `POST` API features (see `src/services/data.service.ts`)
+3. Modify `ngsw-config.json` and add **dataGroups** to specify the endpoints that needs to be cached
 
-## Running end-to-end tests
+Note: Recommend to have a different endpoint URL for `GET` and `POST` it might conflict with the cached data if same URL are given for different Request Methods.
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+4. Create IndexedDB and store the POST data when API calls failed for offline mode (see `src/services/indexed-db.service.ts`)
+5. Create `src/services/offline.service.ts` to get browser window `navigator.online` or listen to `offline|online` events to check whether user is working on `offline` or `online` mode
 
-## Further help
+> Use the listeners to trigger API calls based on the items stored in IndexedDB
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+### Others
+
+Other npm packages used in this project:
+
+- `bson-objectid` to generate Mongo ID in UI
+- `uuid` to generate unique IDs
