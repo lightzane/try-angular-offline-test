@@ -53,5 +53,5 @@ Note: Recommend to have a different endpoint URL for `GET` and `POST` it might c
 
 Other npm packages used in this project:
 
-- `bson-objectid` to generate Mongo ID in UI
-- `uuid` to generate unique IDs
+- `bson-objectid` to generate Mongo ID in UI (https://www.npmjs.com/package/bson-objectid)
+- `uuid` to generate unique IDs (https://www.npmjs.com/package/uuid)
