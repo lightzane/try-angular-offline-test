@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
-import ObjectID from 'bson-objectid';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -19,20 +19,16 @@ export class IndexedDBService {
         db.createObjectStore('user-store');
       }
     });
-
-    if (this.db) {
-      console.log(`Getting data from IndexedDB`);
-      this.getData().then(console.log);
-    }
   }
 
   addUser(user: any): any {
-    user = typeof user === 'string' ? JSON.stringify(user) : user;
     // indexedDB only accepts strings
-    return this.db.put('user-store', user, 'user');
+    user = typeof user === 'string' ? JSON.stringify(user) : user;
+    return this.db.put('user-store', user, uuidv4());
   }
 
-  getData(): Promise<any> {
+  async getData(): Promise<any[]> {
+    await this.connectToDb();
     return new Promise((resolve) => {
       const transaction = this.db.transaction(['user-store']);
       const objStore = transaction.objectStore('user-store');
@@ -43,6 +39,13 @@ export class IndexedDBService {
         }
       });
     });
+  }
+
+  async removeData(): Promise<void> {
+    await this.connectToDb();
+    // const transaction = this.db.transaction(['user-store']);
+    // const objStore = transaction.objectStore('user-store');
+    this.db.clear('user-store');
   }
 }
 

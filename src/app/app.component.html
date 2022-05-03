@@ -1,5 +1,16 @@
 <div class="container-fluid">
   <div class="my-3">
+    <ng-container *ngIf="isOnline; else offline">
+      <div class="alert alert-info">
+        You are in <strong>online</strong> mode
+      </div>
+    </ng-container>
+    <ng-template #offline>
+      <div class="alert alert-dark">OFFLINE mode</div>
+    </ng-template>
+  </div>
+
+  <div class="my-3">
     <button class="btn btn-primary" (click)="addUser()">Add User</button>
     <button class="btn btn-danger" (click)="removeUser()">Remove User</button>
   </div>

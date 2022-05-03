@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { DataService } from './services/data.service';
+import { BehaviorSubject, of, switchMap, tap } from 'rxjs';
+import { DataService, mockData } from './services/data.service';
 import { IndexedDBService } from './services/indexed-db.service';
-import { v4 as uuidv4 } from 'uuid';
 import ObjectID from "bson-objectid";
 import { BSONService } from './services/bson.service';
+import { OfflineService } from './services/offline.service';
 
 @Component({
   selector: 'app-root',
@@ -13,28 +13,31 @@ import { BSONService } from './services/bson.service';
 })
 export class AppComponent implements OnInit {
 
-  _id: ObjectID | string;
+  _id: ObjectID;
 
   users$: BehaviorSubject<any[]> = new BehaviorSubject(null);
   errMsg: any;
   success: boolean = false;
+  isOnline: boolean;
 
   constructor(
     private readonly dataService: DataService,
     private readonly indexedDBService: IndexedDBService,
-    private readonly bsonService: BSONService
+    private readonly bsonService: BSONService,
+    private readonly offlineService: OfflineService
   ) { }
 
   ngOnInit(): void {
     this.dataService.getUsers().subscribe(data => this.users$.next(data));
-    this._id = `This is the _id: ${this.bsonService.createObjectId()}`;
+    this._id = this.bsonService.createObjectId();
+    this.listenOnlineStatus();
   }
 
-  addUser(): void {
+  addUser(user?: any): void {
     this.resetAlert();
-    this.dataService.addUsers()
+    this.dataService.addUsers(user)
       .subscribe({
-        next: (user) => { if (user) { this.users$.next(this.users$.getValue().concat(user)); this.showSuccess(); this.insertToDb(user); } },
+        next: (user) => { if (user) { this.users$.next(this.users$.getValue().concat(user)); this.showSuccess(); this.indexedDBService.removeData(); } },
         error: (err) => this.showError(err),
         complete: () => console.log(`Observable "addUser" completed`)
       });
@@ -66,6 +69,7 @@ export class AppComponent implements OnInit {
     console.error(err);
     this.errMsg = err.message || err;
     this.success = false;
+    this.insertToDb(mockData);
   }
 
   private resetAlert(): void {
@@ -81,6 +85,26 @@ export class AppComponent implements OnInit {
     if (user) {
       this.indexedDBService.addUser(user);
     }
+  }
+
+  private listenOnlineStatus(): void {
+    this.offlineService.connectionChanged
+      .pipe(
+        tap(online => this.isOnline = online),
+        tap(online => this.checkIndexedDB(online))
+      ).subscribe();
+  }
+
+  private async checkIndexedDB(online: boolean): Promise<void> {
+    if (online) {
+      const data = await this.indexedDBService.getData();
+      if (data) {
+        for (let item of data) {
+          this.addUser(item);
+        }
+      }
+    }
+
   }
 
 }
